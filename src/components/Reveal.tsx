@@ -77,6 +77,20 @@ export const Reveal: React.FC = () => {
       
       if (decrypted) {
         setSecretMessage(decrypted);
+        
+        // Save to Vault Memory
+        const vault = JSON.parse(localStorage.getItem('vitra_vault') || '[]');
+        const newItem = {
+          id: Date.now().toString(),
+          message: decrypted,
+          timestamp: new Date().toISOString(),
+          imageThumbnail: image // Use current vessel image
+        };
+        
+        // Avoid duplicates (by message + image)
+        if (!vault.find((v: any) => v.message === decrypted && v.imageThumbnail === image)) {
+          localStorage.setItem('vitra_vault', JSON.stringify([newItem, ...vault].slice(0, 50)));
+        }
       } else {
         throw new Error('Decryption failed. The key derived from your face is incorrect.');
       }
