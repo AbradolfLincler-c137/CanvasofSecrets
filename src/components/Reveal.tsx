@@ -137,7 +137,7 @@ export const Reveal: React.FC = () => {
               <Lock className="w-4 h-4" />
               The Biometric Key
             </label>
-            <Camera onCapture={setFaceEmbedding} onReset={() => setFaceEmbedding(null)} />
+            <Camera onCapture={(embedding) => setFaceEmbedding(Array.isArray(embedding) ? embedding[0] : embedding)} onReset={() => setFaceEmbedding(null)} />
           </section>
 
           <div className="pt-8 space-y-4">

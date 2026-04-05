@@ -3,11 +3,9 @@ import React, { useState, useRef } from 'react';
 import { Camera } from './Camera';
 import { encodeMessage } from '../utils/steganography';
 import { averageEmbeddings, deriveKeyAndSketch, encryptMessage } from '../utils/faceKey';
-import { getGemini, invokePainting } from '../services/gemini';
 import { 
   PenTool, 
   Image as ImageIcon, 
-  Sparkles, 
   Download, 
   Lock, 
   FileText,
@@ -42,24 +40,7 @@ export const Inscribe: React.FC = () => {
     }
   };
 
-  const generateRenaissanceImage = async () => {
-    setIsGenerating(true);
-    setError(null);
-    try {
-      const base64 = await invokePainting('A scholarly portrait or alchemical landscape, rich textures, sfumato technique, dark walnut and gold tones');
-      if (base64) {
-        setImage(base64);
-        setEncodedImage(null);
-      } else {
-        throw new Error('No image was returned from the oracle.');
-      }
-    } catch (err) {
-      console.error('Detailed Generation error:', err);
-      setError('Failed to invoke the alchemical brush. Please try again.');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+
 
   const handleEncode = async () => {
     if (!message || !image || !faceEmbeddings || !canvasRef.current) return;
@@ -149,14 +130,7 @@ export const Inscribe: React.FC = () => {
                 <Upload className="w-4 h-4" />
                 <span className="text-xs uppercase tracking-widest font-display">Upload</span>
               </button>
-              <button
-                onClick={generateRenaissanceImage}
-                disabled={isGenerating}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-none border border-secondary/30 transition-all disabled:opacity-50"
-              >
-                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                <span className="text-xs uppercase tracking-widest font-display">Invoke AI</span>
-              </button>
+
             </div>
             <input
               type="file"

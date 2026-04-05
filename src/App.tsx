@@ -4,7 +4,6 @@ import { Sidebar, Topbar } from './components/Layout';
 import { Entrance } from './components/Entrance';
 import { Inscribe } from './components/Inscribe';
 import { Reveal } from './components/Reveal';
-import { Forge } from './components/Forge';
 import { Vault } from './components/Vault';
 
 export default function App() {
@@ -27,7 +26,6 @@ export default function App() {
               <Route path="/" element={<Entrance />} />
               <Route path="/inscribe" element={<Inscribe />} />
               <Route path="/reveal" element={<Reveal />} />
-              <Route path="/forge" element={<Forge />} />
               <Route path="/vault" element={<Vault />} />
             </Routes>
           </main>

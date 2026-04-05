@@ -18,13 +18,9 @@ echo "✅ NPM installed: $(npm -v)"
 
 # Check .env file
 if [ ! -f .env ]; then
-    echo "❌ .env file is missing. Please copy .env.example to .env and configure GEMINI_API_KEY."
+    echo "ℹ️ No local .env file found. Environment variables are not required for the current build."
 else
-    if grep -q "GEMINI_API_KEY=\"MY_GEMINI_API_KEY\"" .env; then
-        echo "❌ GEMINI_API_KEY in .env is still the default. Please set a valid API key."
-    else
-        echo "✅ .env file exists and GEMINI_API_KEY is configured."
-    fi
+    echo "✅ .env file exists."
 fi
 
 # Check missing node_modules

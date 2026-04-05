@@ -1,7 +1,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import * as faceapi from '@vladmandic/face-api';
-import { loadModels, getFaceEmbedding, euclideanDistance } from '../utils/faceKey';
+import { loadModels, loadTinyModels, getFaceEmbedding, detectFaceBox } from '../utils/faceKey';
 import { Camera as CameraIcon, CheckCircle, RefreshCcw, Upload, AlertTriangle } from 'lucide-react';
 
 interface CameraProps {
@@ -29,16 +29,17 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
   useEffect(() => {
     let stream: MediaStream | null = null;
     let scanInterval: any;
-    let previousEmbedding: Float32Array | null = null;
+    let previousBox: faceapi.Box | null = null;
 
     const startVideo = async () => {
       try {
-        await loadModels();
+        await loadTinyModels();
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           setIsReady(true);
         }
+        loadModels().catch((err) => console.warn('Background model load failed:', err));
       } catch (err) {
         console.error('Camera error:', err);
         setError('Failed to access camera. Enabling manual bypass mode.');
@@ -53,29 +54,27 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
       if (!videoRef.current || !isReady || isScanning || captured || isBypassMode) return;
       
       try {
-        const currentEmbedding = await getFaceEmbedding(videoRef.current);
-        if (currentEmbedding) {
-          if (previousEmbedding) {
-            const dist = euclideanDistance(previousEmbedding, currentEmbedding);
-            if (onStabilityChange) {
-              onStabilityChange(dist < 0.65);
-            }
-            if (dist >= 0.65) {
-               // Update baseline if it moved too much
-               previousEmbedding = currentEmbedding;
-            }
+        const currentBox = await detectFaceBox(videoRef.current);
+        if (currentBox) {
+          if (previousBox) {
+            const dx = currentBox.x - previousBox.x;
+            const dy = currentBox.y - previousBox.y;
+            const movement = Math.hypot(dx, dy);
+            const isStable = movement < 24;
+            if (onStabilityChange) onStabilityChange(isStable);
+            if (!isStable) previousBox = currentBox;
           } else {
-            previousEmbedding = currentEmbedding;
+            previousBox = currentBox;
             if (onStabilityChange) onStabilityChange(false);
           }
         } else {
-          previousEmbedding = null;
+          previousBox = null;
           if (onStabilityChange) onStabilityChange(false);
         }
       } catch (err) {
         // silently ignore continuous scan errors to avoid UI noise
       }
-    }, 600);
+    }, 1200);
 
     return () => {
       if (scanInterval) clearInterval(scanInterval);

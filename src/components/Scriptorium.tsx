@@ -1,25 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Upload, Brush, Wand2, History } from 'lucide-react';
-import { invokePainting } from '../services/gemini';
+import { Upload, Wand2, History } from 'lucide-react';
 
 export function Scriptorium() {
   const [text, setText] = useState('');
-  const [isInvoking, setIsInvoking] = useState(false);
   const [painting, setPainting] = useState<string | null>(null);
 
-  const handleInvoke = async () => {
-    if (!text) return;
-    setIsInvoking(true);
-    try {
-      const result = await invokePainting(text);
-      if (result) setPainting(result);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsInvoking(false);
-    }
-  };
 
   return (
     <div className="flex-1 pt-32 pb-24 px-8 md:px-16 flex flex-col items-center">
@@ -67,15 +53,12 @@ export function Scriptorium() {
               <p className="font-body text-sm opacity-70 max-w-xs">Select a relic from your own archives to serve as the vessel for your message.</p>
             </div>
 
-            <div 
-              onClick={handleInvoke}
-              className={`group flex-1 flex flex-col items-center justify-center p-8 text-center cursor-pointer hover:bg-tertiary transition-colors duration-700 ${isInvoking ? 'animate-pulse pointer-events-none' : ''}`}
-            >
+            <div className="group flex-1 flex flex-col items-center justify-center p-8 text-center bg-tertiary/10 transition-colors duration-700">
               <div className="mb-6 p-6 border border-secondary/30 group-hover:border-secondary transition-colors duration-700">
-                <Brush className="w-10 h-10 text-secondary" />
+                <Upload className="w-10 h-10 text-secondary" />
               </div>
-              <h3 className="font-headline text-2xl mb-2">{isInvoking ? 'Invoking...' : 'Invoke a Painting'}</h3>
-              <p className="font-body text-sm opacity-70 max-w-xs">Describe a vision and let the ancient spirits manifest it into physical form.</p>
+              <h3 className="font-headline text-2xl mb-2">Select Your Canvas</h3>
+              <p className="font-body text-sm opacity-70 max-w-xs">Upload an image from your own archives to serve as the vessel for your arcana.</p>
             </div>
           </div>
         </div>

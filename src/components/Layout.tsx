@@ -8,7 +8,6 @@ export function Sidebar() {
     { name: 'Entrance', path: '/', icon: Castle },
     { name: 'Inscribe', path: '/inscribe', icon: Edit3 },
     { name: 'Reveal', path: '/reveal', icon: Eye },
-    { name: 'Alchemist\'s Forge', path: '/forge', icon: History },
     { name: 'The Vault', path: '/vault', icon: Lock },
   ];
 
@@ -64,7 +63,7 @@ export function Topbar() {
         Vitra Arcana
       </div>
       <nav className="hidden md:flex gap-12">
-        {['Inscribe', 'Reveal', 'Forge', 'Vault'].map((item) => (
+        {['Inscribe', 'Reveal', 'Vault'].map((item) => (
           <NavLink
             key={item}
             to={`/${item.toLowerCase()}`}

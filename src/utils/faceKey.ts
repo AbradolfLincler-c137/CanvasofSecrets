@@ -8,19 +8,23 @@ import CryptoJS from 'crypto-js';
  */
 
 let isModelLoaded = false;
+let isTinyModelLoaded = false;
+
+const MODEL_URL = 'https://vladmandic.github.io/face-api/model';
+
+export const loadTinyModels = async () => {
+  if (isTinyModelLoaded) return;
+  await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+  isTinyModelLoaded = true;
+};
 
 export const loadModels = async () => {
   if (isModelLoaded) return;
-  
-  // Use models from a public CDN
-  const MODEL_URL = 'https://vladmandic.github.io/face-api/model';
-  
+  await loadTinyModels();
   await Promise.all([
-    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
     faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
   ]);
-  
   isModelLoaded = true;
 };
 
@@ -30,11 +34,19 @@ export const getFaceEmbedding = async (
   await loadModels();
   
   const detection = await faceapi
-    .detectSingleFace(input)
+    .detectSingleFace(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 }))
     .withFaceLandmarks()
     .withFaceDescriptor();
     
   return detection ? detection.descriptor : null;
+};
+
+export const detectFaceBox = async (
+  input: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement
+): Promise<faceapi.Box | null> => {
+  await loadTinyModels();
+  const detection = await faceapi.detectSingleFace(input, new faceapi.TinyFaceDetectorOptions());
+  return detection?.box ?? null;
 };
 
 export const averageEmbeddings = (embeddings: Float32Array[]): Float32Array => {
