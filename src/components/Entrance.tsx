@@ -23,7 +23,7 @@ export function Entrance() {
             Canvas of <br /> <span className="italic font-light">Whispers</span>
           </h1>
           <p className="font-body text-xl md:text-2xl text-primary/70 max-w-lg leading-relaxed italic">
-            "Whisper your secrets into the eternal glass. What is hidden in Vitra, remains sacred in Arcana."
+            "Whisper your secrets into the eternal glass. What is hidden here, remains sacred in the future."
           </p>
           
           <div className="mt-8 flex flex-wrap gap-6 relative z-10">
@@ -60,7 +60,7 @@ export function Entrance() {
             />
             <div className="absolute top-1/4 right-0 w-48 h-48 rounded-full glass-lens flex items-center justify-center">
               <span className="text-[0.6rem] text-primary/40 font-mono text-center px-4 leading-none uppercase tracking-widest">
-                Secreta <br /> Vitrum <br /> Arcanum <br /> MCCCCLII
+                Passwordless <br /> Future <br /> Identity <br /> MCCCCLII
               </span>
             </div>
           </div>
@@ -77,8 +77,8 @@ export function Entrance() {
         <div className="p-10 bg-surface-highest flex flex-col gap-4 relative overflow-hidden group">
           <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-5 transition-opacity" />
           <Eye className="text-secondary w-10 h-10" />
-          <h3 className="font-headline text-2xl text-primary">The Vitra Lens</h3>
-          <p className="text-primary/60 leading-relaxed">Revealing truths hidden in plain sight. Use the glass to decipher the unwritten laws of the guild.</p>
+          <h3 className="font-headline text-2xl text-primary">The Vision Lens</h3>
+          <p className="text-primary/60 leading-relaxed">Revealing truths hidden in plain sight. Use the glass to decipher the unwritten laws of the digital world.</p>
         </div>
         <div className="p-10 bg-surface-low flex flex-col gap-4 border-r-4 border-secondary/40">
           <BookOpen className="text-secondary w-10 h-10" />

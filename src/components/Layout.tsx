@@ -1,9 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Castle, Edit3, History, Lock, Settings, Book, Menu, Eye } from 'lucide-react';
+import { Castle, Edit3, History, Lock, Settings, Book, Menu, Eye, User, LogOut } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useAuth } from '../context/VitraAuthContext';
 
 export function Sidebar() {
+  const { profile, lockSanctum } = useAuth();
+  
   const navItems = [
     { name: 'Entrance', path: '/', icon: Castle },
     { name: 'Inscribe', path: '/inscribe', icon: Edit3 },
@@ -18,7 +21,10 @@ export function Sidebar() {
           <Castle className="text-secondary w-8 h-8" />
           <h2 className="text-3xl font-headline text-primary dark:text-surface">The Ledger</h2>
         </div>
-        <p className="font-body italic text-lg opacity-60 text-primary dark:text-surface">Manuscript No. 1452</p>
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-secondary opacity-60">
+          <User className="w-3 h-3" />
+          <span>Scholar {profile?.name}</span>
+        </div>
       </div>
 
       <nav className="flex-1 space-y-8">
@@ -40,13 +46,23 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto space-y-6">
-        <button className="w-full py-4 bg-primary text-on-primary font-headline tracking-widest uppercase text-xs hover:bg-secondary transition-colors duration-500">
-          Reveal Arcana
+        <button 
+          onClick={lockSanctum}
+          className="w-full py-4 bg-wax text-surface font-headline tracking-widest uppercase text-xs hover:bg-primary transition-colors duration-500 flex items-center justify-center gap-2 shadow-lg active:scale-95"
+        >
+          <LogOut className="w-3 h-3" />
+          Lock Sanctum
         </button>
         <div className="flex flex-col gap-4 border-t border-primary/10 pt-6">
-          <a href="#" className="flex items-center gap-3 text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">
-            <Settings className="w-4 h-4" /> Settings
-          </a>
+          <NavLink
+            to="/profile"
+            className={({ isActive }) => `
+              flex items-center gap-3 text-xs uppercase tracking-widest transition-opacity
+              ${isActive ? 'opacity-100 text-secondary' : 'opacity-60 hover:opacity-100'}
+            `}
+          >
+            <Settings className="w-4 h-4" /> Profile Settings
+          </NavLink>
           <a href="#" className="flex items-center gap-3 text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">
             <Book className="w-4 h-4" /> Glossary
           </a>
@@ -57,32 +73,29 @@ export function Sidebar() {
 }
 
 export function Topbar() {
+  const { profile } = useAuth();
+
   return (
     <header className="sticky top-0 z-30 flex justify-between items-center px-8 py-6 w-full bg-surface dark:bg-tertiary">
       <div className="text-2xl font-bold text-primary dark:text-surface tracking-tighter font-headline">
-        Vitra Arcana
+        Passwordless Future
       </div>
-      <nav className="hidden md:flex gap-12">
-        {['Inscribe', 'Reveal', 'Vault'].map((item) => (
-          <NavLink
-            key={item}
-            to={`/${item.toLowerCase()}`}
-            className="font-headline tracking-widest uppercase text-sm text-primary dark:text-surface opacity-70 hover:text-secondary transition-colors duration-500"
-          >
-            {item}
-          </NavLink>
-        ))}
-      </nav>
       <div className="flex items-center gap-4">
-        <Book className="text-secondary w-6 h-6 cursor-pointer" />
-        <div className="w-10 h-10 rounded-full bg-surface-highest overflow-hidden border border-primary/10">
+        <div className="hidden lg:flex flex-col items-end gap-0.5">
+          <span className="text-[10px] font-mono text-secondary opacity-60 uppercase tracking-widest">Scholar Active</span>
+          <span className="text-xs font-headline text-primary opacity-80">{profile?.name}</span>
+        </div>
+        <NavLink 
+          to="/profile"
+          className="w-10 h-10 rounded-full bg-surface-highest overflow-hidden border border-primary/10 hover:border-secondary/50 transition-colors cursor-pointer group"
+        >
           <img 
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuClcHk65BuH9NMg221fS5D6tKNlpTlGQiN5lLKPNbQKJNMQEpM7ihrz5XhgwLGV6yOaf52xZPuEiD2zPlHWUeR2v7GY0Fv0p0O6hyTZYigr7KZq1xErmw_WWFNlZVOiJdMrXOhMXMclLs04f2RyFZUB4EOVXDoJaHaj70QfFYbxF6qOh6ULuZheiav6rm5ETZBsPUpJphDzrJfdSquVmPqyryVDU-IDUxD8AfwD3Ack7_sg3ExqsEVcnEq6iK0pmKFlXtSqHkk2GiI" 
             alt="Scholar"
-            className="w-full h-full object-cover grayscale brightness-75"
+            className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all"
             referrerPolicy="no-referrer"
           />
-        </div>
+        </NavLink>
       </div>
     </header>
   );

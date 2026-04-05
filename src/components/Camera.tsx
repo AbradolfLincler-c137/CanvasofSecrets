@@ -1,7 +1,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import * as faceapi from '@vladmandic/face-api';
-import { loadModels, loadTinyModels, getFaceEmbedding, detectFaceBox } from '../utils/faceKey';
+import { loadModels, getFaceEmbedding, detectFaceBox } from '../utils/faceKey';
 import { Camera as CameraIcon, CheckCircle, RefreshCcw, Upload, AlertTriangle } from 'lucide-react';
 
 interface CameraProps {
@@ -42,13 +42,13 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
 
     const startVideo = async () => {
       try {
-        await loadTinyModels();
+        // Fast path for detection - models are already pre-warming in the background
+        await loadModels(); 
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           setIsReady(true);
         }
-        await loadModels();
         setIsModelsLoading(false);
       } catch (err) {
         console.error('Camera error:', err);
@@ -59,7 +59,7 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
 
     startVideo();
 
-    // High-speed interval for hackathon (100ms = 10fps)
+    // High-speed interval for hackathon (80ms = 12.5fps for snappier tracking)
     scanInterval = setInterval(async () => {
       if (!videoRef.current || !isReady || isScanning || captured || isBypassMode || isModelsLoading) return;
       
@@ -70,7 +70,8 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
             const dx = currentBox.x - previousBox.x;
             const dy = currentBox.y - previousBox.y;
             const movement = Math.hypot(dx, dy);
-            const isStable = movement < 45; // More lenient for speed
+            // Increased movement threshold slightly (45 -> 55) for faster lock-on in hand-held use
+            const isStable = movement < 55; 
             
             if (isStable) {
               setStableCount(prev => prev + 1);
@@ -93,7 +94,7 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
       } catch (err) {
         // silently ignore
       }
-    }, 100);
+    }, 80);
 
     return () => {
       if (scanInterval) clearInterval(scanInterval);

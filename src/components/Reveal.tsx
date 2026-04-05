@@ -206,7 +206,7 @@ export const Reveal: React.FC = () => {
                 {secretMessage}
               </motion.p>
               <div className="absolute bottom-4 right-4 text-primary/20 font-manuscript italic text-xs">
-                Decoded via Vitra Arcana
+                Decoded via Passwordless Future
               </div>
             </div>
           </motion.div>

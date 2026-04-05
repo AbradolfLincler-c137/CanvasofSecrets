@@ -1,13 +1,18 @@
-Canvas of Secrets
+# Passwordless Future: Canvas of Secrets
 
-A Renaissance-inspired web experience where secrets are hidden within art and locked by your biology. Using advanced steganography and biometric key derivation, **Canvas of Secrets** turns the act of hiding a message into a ritual of digital alchemy.
+A Renaissance-inspired web experience where secrets are hidden within art and locked by your biology. Using advanced steganography and biometric key derivation, **Passwordless Future** turns the act of hiding a message into a ritual of digital alchemy.
 
 ---
 
-Workflow:
+## 🏛️ The Great Ritual (Workflow)
 
 ```mermaid
 graph TD
+    subgraph ENROLL_PHASE [0. Identity Foundation]
+        Z[Biometric Presence] --> Y[Identity Enrollment]
+        Y --> X[Scholar Profile Created]
+    end
+
     subgraph INSCRIBE_PHASE [1. Inscribe Arcana]
         A[Secret Message] --> C[Biometric Key Derivation]
         B[Uploaded Image] --> D[Steganography Engine]
@@ -28,30 +33,33 @@ graph TD
     end
 
     subgraph VAULT_PHASE [3. The Vault]
-        M --> N[Save to Local Memory]
+        M --> N[Save to High-Capacity IndexedDB]
         N --> O[Sacred Scroll Gallery]
-        O --> P[Persistent Access]
+        O --> P[Persistent Access via Face ID]
     end
 ```
 
 ---
 
-## Key Features
+## 🗝️ Key Features
 
-- **Biometric Key Derivation**: Unlike traditional FaceID which just says "Yes/No," we derive a unique cryptographic key directly from your facial geometry using a **Fuzzy Extractor** scheme.
+- **Biometric Key Derivation**: Unlike traditional Face ID which just says "Yes/No," we derive a unique cryptographic key directly from your facial geometry using a **Fuzzy Extractor** scheme.
+- **Biometric Sanctum (Login/Profile)**: The entire application is protected by a biometric gate. No passwords, no emails—just your presence. Manage your Scholar identity in the dedicated Profile settings.
 - **Steganographic Sealing**: Messages are woven into the bitstream of an image. They are invisible to the naked eye and leave no digital footprint.
-- **Zero-Storage Privacy**: Your secrets never touch a server. All encryption, decryption, and "memory" (The Vault) happen entirely on your local device.
-- **Hackathon-Grade Performance**: Optimized with GPU (WebGL) acceleration for near-instant 100ms face tracking and auto-capture.
+- **High-Capacity IndexedDB Vault**: Migrated from limited storage to a robust, asynchronous database. Supports thousands of secrets with automatic thumbnailing for extreme performance.
+- **Zero-Storage Privacy**: Your secrets never touch a server. All encryption, decryption, and identity data exist only on your device.
+- **Turbo-Charged Engine**: Parallelized neural network loading and WebGL acceleration for near-instant biometric recognition.
 
-### Technical Stack
+### 📜 Technical Stack
 - **Biometrics**: `@vladmandic/face-api` (TensorFlow.js) with WebGL acceleration.
 - **Cryptography**: `CryptoJS` (AES-256, SHA-256).
+- **Storage**: IndexedDB for high-capacity local vaults + Thumbnailing Engine.
 - **Frontend**: React 19 + Vite + Tailwind CSS + Framer Motion.
 - **Icons**: Lucide React.
 
 ---
 
-## How to Run
+## 🏺 How to Run
 
 1.  **Clone & Enter**:
     ```bash
@@ -68,4 +76,4 @@ graph TD
 4.  **Witness**: Open [http://localhost:3000](http://localhost:3000)
 
 ---
-*© MCCCCLII Vitra Arcana. All secrets reserved.*
+*© MCCCCLII Passwordless Future. All secrets reserved.*
