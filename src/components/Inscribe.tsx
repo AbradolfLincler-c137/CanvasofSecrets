@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'motion/react';
 export const Inscribe: React.FC = () => {
   const [message, setMessage] = useState('');
   const [image, setImage] = useState<string | null>(null);
-  const [faceEmbeddings, setFaceEmbeddings] = useState<Float32Array[] | null>(null);
+  const [faceEmbeddings, setFaceEmbeddings] = useState<Float32Array | Float32Array[] | null>(null);
   const [isStable, setIsStable] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEncoding, setIsEncoding] = useState(false);
@@ -65,9 +65,9 @@ export const Inscribe: React.FC = () => {
       ctx.drawImage(img, 0, 0);
 
       // 1. Derive key from face
-      if (!faceEmbeddings || faceEmbeddings.length < 3) throw new Error('Face scans incomplete.');
-      const meanEmbedding = averageEmbeddings(faceEmbeddings);
-      const { key, sketch } = deriveKeyAndSketch(meanEmbedding);
+      if (!faceEmbeddings) throw new Error('Face scan incomplete.');
+      const embedding = Array.isArray(faceEmbeddings) ? averageEmbeddings(faceEmbeddings) : faceEmbeddings;
+      const { key, sketch } = deriveKeyAndSketch(embedding);
       
       // 2. Encrypt message
       const encrypted = encryptMessage(message, key);
@@ -162,10 +162,9 @@ export const Inscribe: React.FC = () => {
             </label>
             <div className={`transition-all duration-500 rounded-xl ${isStable && !faceEmbeddings ? 'ring-4 ring-emerald-500/80 shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'ring-4 ring-transparent'}`}>
               <Camera 
-                onCapture={(embs) => setFaceEmbeddings(embs as Float32Array[])} 
+                onCapture={(embs) => setFaceEmbeddings(embs)} 
                 onReset={() => { setFaceEmbeddings(null); setIsStable(false); }} 
                 onStabilityChange={setIsStable} 
-                stages={['Look Center', 'Look Left', 'Look Right']}
               />
             </div>
             {!faceEmbeddings && (

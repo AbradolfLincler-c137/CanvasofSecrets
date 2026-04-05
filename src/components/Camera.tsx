@@ -23,8 +23,17 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [embeddings, setEmbeddings] = useState<Float32Array[]>([]);
   const [isBypassMode, setIsBypassMode] = useState(false);
+  const [isModelsLoading, setIsModelsLoading] = useState(true);
+  const [stableCount, setStableCount] = useState(0);
 
   const activeStages = stages || [label || 'Capture Face Key'];
+
+  // Auto-capture when stable for ~3 frames (300ms)
+  useEffect(() => {
+    if (stableCount >= 3 && !captured && !isScanning && !isBypassMode && !isModelsLoading) {
+      handleCapture();
+    }
+  }, [stableCount]);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -39,7 +48,8 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
           videoRef.current.srcObject = stream;
           setIsReady(true);
         }
-        loadModels().catch((err) => console.warn('Background model load failed:', err));
+        await loadModels();
+        setIsModelsLoading(false);
       } catch (err) {
         console.error('Camera error:', err);
         setError('Failed to access camera. Enabling manual bypass mode.');
@@ -49,9 +59,9 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
 
     startVideo();
 
-    // Continuous scanning for stability indicator
+    // High-speed interval for hackathon (100ms = 10fps)
     scanInterval = setInterval(async () => {
-      if (!videoRef.current || !isReady || isScanning || captured || isBypassMode) return;
+      if (!videoRef.current || !isReady || isScanning || captured || isBypassMode || isModelsLoading) return;
       
       try {
         const currentBox = await detectFaceBox(videoRef.current);
@@ -60,21 +70,30 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
             const dx = currentBox.x - previousBox.x;
             const dy = currentBox.y - previousBox.y;
             const movement = Math.hypot(dx, dy);
-            const isStable = movement < 24;
+            const isStable = movement < 45; // More lenient for speed
+            
+            if (isStable) {
+              setStableCount(prev => prev + 1);
+            } else {
+              setStableCount(0);
+            }
+
             if (onStabilityChange) onStabilityChange(isStable);
-            if (!isStable) previousBox = currentBox;
+            previousBox = currentBox;
           } else {
             previousBox = currentBox;
+            setStableCount(0);
             if (onStabilityChange) onStabilityChange(false);
           }
         } else {
           previousBox = null;
+          setStableCount(0);
           if (onStabilityChange) onStabilityChange(false);
         }
       } catch (err) {
-        // silently ignore continuous scan errors to avoid UI noise
+        // silently ignore
       }
-    }, 1200);
+    }, 100);
 
     return () => {
       if (scanInterval) clearInterval(scanInterval);
@@ -239,13 +258,15 @@ export const Camera: React.FC<CameraProps> = ({ onCapture, onReset, onStabilityC
               disabled={(!isReady && !isBypassMode) || isScanning}
               className="flex items-center gap-2 px-6 py-2 bg-amber-900/80 hover:bg-amber-800 text-amber-100 rounded-full border border-amber-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group whitespace-nowrap"
             >
-              {isBypassMode ? (
+              {isModelsLoading ? (
+                <RefreshCcw className="w-4 h-4 animate-spin" />
+              ) : isBypassMode ? (
                 <Upload className="w-4 h-4 group-hover:-translate-y-1 transition-transform" />
               ) : (
                 <CameraIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
               )}
               <span className="text-sm uppercase tracking-widest font-serif">
-                {isBypassMode ? `Upload for ${activeStages[currentStageIndex]}` : activeStages[currentStageIndex]}
+                {isModelsLoading ? 'Preparing Lens...' : isBypassMode ? `Upload for ${activeStages[currentStageIndex]}` : activeStages[currentStageIndex]}
               </span>
             </button>
           ) : (

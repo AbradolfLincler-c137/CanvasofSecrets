@@ -20,11 +20,31 @@ export const loadTinyModels = async () => {
 
 export const loadModels = async () => {
   if (isModelLoaded) return;
+  
+  // 1. Force WebGL Backend for GPU Acceleration
+  try {
+    const tf = faceapi.tf as any;
+    if (tf) {
+      await tf.setBackend('webgl');
+      await tf.ready();
+      console.info(`[Vitra Arcana] Biometric Engine initialized on [${tf.getBackend()}] backend.`);
+    }
+  } catch (e) {
+    console.warn('[Vitra Arcana] WebGL initialization failed, falling back to CPU.', e);
+  }
+
   await loadTinyModels();
   await Promise.all([
     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
     faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
   ]);
+  
+  // 2. Pre-warm the model by running a dummy detection
+  const dummyCanvas = document.createElement('canvas');
+  dummyCanvas.width = 32;
+  dummyCanvas.height = 32;
+  await faceapi.detectSingleFace(dummyCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 128 }));
+  
   isModelLoaded = true;
 };
 
@@ -34,7 +54,7 @@ export const getFaceEmbedding = async (
   await loadModels();
   
   const detection = await faceapi
-    .detectSingleFace(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 }))
+    .detectSingleFace(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.4 }))
     .withFaceLandmarks()
     .withFaceDescriptor();
     
@@ -45,7 +65,8 @@ export const detectFaceBox = async (
   input: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement
 ): Promise<faceapi.Box | null> => {
   await loadTinyModels();
-  const detection = await faceapi.detectSingleFace(input, new faceapi.TinyFaceDetectorOptions());
+  // Using ultra-low 128px input for near-instant box detection for stability check
+  const detection = await faceapi.detectSingleFace(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.3 }));
   return detection?.box ?? null;
 };
 
