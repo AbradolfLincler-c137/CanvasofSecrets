@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Camera } from './Camera';
 import { decodeMessage } from '../utils/steganography';
@@ -13,6 +12,8 @@ import {
   FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { createThumbnail } from '../utils/imageUtils';
+import { addVaultItem } from '../utils/vaultStorage';
 
 export const Reveal: React.FC = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -78,19 +79,20 @@ export const Reveal: React.FC = () => {
       if (decrypted) {
         setSecretMessage(decrypted);
         
-        // Save to Vault Memory
-        const vault = JSON.parse(localStorage.getItem('vitra_vault') || '[]');
+        // Save to Vault Memory (IndexedDB)
+        // Creating a small thumbnail (max 400px) from the full image
+        const thumbnail = await createThumbnail(image);
+        
         const newItem = {
           id: Date.now().toString(),
           message: decrypted,
           timestamp: new Date().toISOString(),
-          imageThumbnail: image // Use current vessel image
+          imageThumbnail: thumbnail
         };
         
-        // Avoid duplicates (by message + image)
-        if (!vault.find((v: any) => v.message === decrypted && v.imageThumbnail === image)) {
-          localStorage.setItem('vitra_vault', JSON.stringify([newItem, ...vault].slice(0, 50)));
-        }
+        await addVaultItem(newItem);
+        console.log('Secret successfully secured in The Vault.');
+        
       } else {
         throw new Error('Decryption failed. The key derived from your face is incorrect.');
       }

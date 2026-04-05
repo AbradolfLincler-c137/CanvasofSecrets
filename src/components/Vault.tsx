@@ -1,30 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UploadCloud, Lock, ShieldCheck, Trash2, Eye, Calendar, Clock } from 'lucide-react';
-
-interface VaultItem {
-  id: string;
-  message: string;
-  timestamp: string;
-  imageThumbnail: string;
-}
+import { getVaultItems, deleteVaultItem, VaultItem } from '../utils/vaultStorage';
 
 export function Vault() {
   const [items, setItems] = useState<VaultItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<VaultItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem('vitra_vault');
-    if (saved) {
-      setItems(JSON.parse(saved));
-    }
+    const loadVault = async () => {
+      try {
+        const saved = await getVaultItems();
+        setItems(saved);
+      } catch (e) {
+        console.error('Failed to load vault:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadVault();
   }, []);
 
-  const deleteItem = (id: string) => {
-    const updated = items.filter(i => i.id !== id);
-    setItems(updated);
-    localStorage.setItem('vitra_vault', JSON.stringify(updated));
-    if (selectedItem?.id === id) setSelectedItem(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteVaultItem(id);
+      setItems(prev => prev.filter(i => i.id !== id));
+      if (selectedItem?.id === id) setSelectedItem(null);
+    } catch (e) {
+      console.error('Failed to delete item:', e);
+    }
   };
 
   return (
@@ -44,7 +49,9 @@ export function Vault() {
           <p className="text-secondary font-headline italic text-2xl -mt-6 ml-8">Sanctum of Revelations</p>
           <div className="mt-8 flex items-center gap-4">
             <ShieldCheck className="text-secondary w-5 h-5" />
-            <span className="text-surface/60 font-mono text-[10px] uppercase tracking-[0.4em]">Memory Persistence Active • {items.length} Secret(s)</span>
+            <span className="text-surface/60 font-mono text-[10px] uppercase tracking-[0.4em]">
+              Memory Persistence Active • {items.length} Secret(s) • IndexedDB Powered
+            </span>
           </div>
         </header>
 
@@ -52,18 +59,18 @@ export function Vault() {
           {/* Gallery Grid */}
           <div className="lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <AnimatePresence>
-              {items.map((item, idx) => (
+              {!isLoading && items.map((item, idx) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ delay: idx * 0.1 }}
+                  transition={{ delay: idx * 0.05 }}
                   onClick={() => setSelectedItem(item)}
-                  className="group relative bg-primary/40 border border-secondary/20 aspect-[3/4] cursor-pointer hover:border-secondary transition-all overflow-hidden"
+                  className="group relative bg-primary/40 border border-secondary/20 aspect-[3/4] cursor-pointer hover:border-secondary transition-all overflow-hidden shadow-2xl"
                 >
                   <img src={item.imageThumbnail} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
                   
                   <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2">
                     <div className="flex items-center gap-2 text-secondary/60 font-mono text-[8px] uppercase tracking-widest">
@@ -77,8 +84,8 @@ export function Vault() {
 
                   <div className="absolute top-4 right-4 flex gap-2 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
                     <button 
-                      onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
-                      className="p-2 bg-wax text-surface rounded-full hover:scale-110 transition-transform"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
+                      className="p-2 bg-wax text-surface rounded-full hover:scale-110 transition-transform shadow-lg"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -87,10 +94,19 @@ export function Vault() {
               ))}
             </AnimatePresence>
 
-            {items.length === 0 && (
+            {!isLoading && items.length === 0 && (
               <div className="col-span-full py-32 border-2 border-dashed border-secondary/20 flex flex-col items-center justify-center gap-6 opacity-40">
                 <Lock className="w-12 h-12 text-secondary" />
-                <p className="font-headline text-surface tracking-[0.2em] uppercase text-xs">The Vault is empty. Reveal secrets to populate it.</p>
+                <p className="font-headline text-surface tracking-[0.2em] uppercase text-xs text-center px-4">
+                  The Vault is empty. Reveal secrets to populate it.
+                </p>
+              </div>
+            )}
+
+            {isLoading && (
+              <div className="col-span-full py-32 flex flex-col items-center justify-center gap-4 opacity-40">
+                <ShieldCheck className="w-12 h-12 text-secondary animate-pulse" />
+                <p className="font-headline text-surface tracking-[0.2em] uppercase text-xs">Accessing Ancient Memory...</p>
               </div>
             )}
           </div>
